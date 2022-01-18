@@ -1,0 +1,4 @@
+package-lock.json
+node_modules
+server/config.js
+server/test_data/*.csv
