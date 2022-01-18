@@ -1,31 +1,100 @@
 const express = require('express');
+const bodyParser = require('body-parser');
 const axios = require('axios');
 const API_KEY = require('./config.js').API_KEY;
+const {
+  loadReview,
+  updateReview,
+  loadReviews,
+  createReview,
+  loadReviewsMeta
+} = require('./database');
 const app = express();
 const port = 3003;
 
-const path = require('path');
-const { error } = require('console');
-app.use('/', express.static(path.join(__dirname, '../../atelier-front-end/dist')));
+app.use(bodyParser.json());
 
-app.all('*', (req, res) => {
-  console.log(req.path);
-  console.log(req.query);
-  axios({
-    method: req.method,
-    url: `https://app-hrsei-api.herokuapp.com/api/fec2/hr-nyc${req.path}`,
-    headers: {Authorization: API_KEY},
-    params: req.query
-  })
-    .then((serviceResponse) => {
-      res.json(serviceResponse.data);
+app.get('/reviews', (req, res) => {
+  if (req.query.product_id) {
+    loadReviews(req.query.product_id)
+      .then((reviews) => {
+        res.json(reviews);
+      })
+      .catch((err) => {
+        console.error(err);
+        res.status(500).send(err);
+      });
+  }
+});
+
+app.get('/reviews/meta', (req, res) => {
+  if (req.query.product_id) {
+    loadReviewsMeta(req.query.product_id.toString())
+      .then((reviewsMeta) => {
+        res.json(reviewsMeta);
+      })
+      .catch((err) => {
+        console.error(err);
+        res.status(500).send(err);
+      });
+  }
+});
+
+app.post('/reviews', (req, res) => {
+  createReview(req.body)
+    .then((result) => {
+      res.sendStatus(201);
     })
     .catch((err) => {
-      console.error(err.toJSON().message);
-      if (error.response) {
-        console.error(err.response.data);
-      }
+      console.error(err);
+      res.status(500).send(err);
     });
+});
+
+app.put('/reviews/:review_id/helpful', (req, res) => {
+  if (req.params.review_id) {
+    loadReview(req.params.review_id)
+      .then((review) => {
+        if (review) {
+          review.helpfulness++;
+          updateReview(req.params.review_id, review)
+            .then(() => {
+              res.sendStatus(204);
+            });
+        } else {
+          res.status(422).send('No such review_id');
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+        res.status(500).send(err);
+      })
+  } else {
+    res.status(400).send('Missing parameters');
+  }
+});
+
+app.put('/reviews/:review_id/report', (req, res) => {
+  if (req.params.review_id) {
+    loadReview(req.params.review_id)
+      .then((review) => {
+        if (review) {
+          review.reported = true;
+          updateReview(req.params.review_id, review)
+            .then(() => {
+              res.sendStatus(204);
+            });
+        } else {
+          res.status(422).send('No such review_id');
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+        res.status(500).send(err);
+      })
+  } else {
+    res.status(400).send('Missing parameters');
+  }
 });
 
 app.listen(port, () => {
