@@ -1,7 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const axios = require('axios');
-const API_KEY = require('./config.js').API_KEY;
 const {
   loadReview,
   updateReview,
