@@ -177,8 +177,13 @@ const loadReviewsMeta = (product_id) => {
 };
 
 const loadReviews = (product_id, count, page, sort) => {
-  return Review.find({ product_id }).where('reported').ne(true)
+  return Review.find({ product_id }).where('reported').ne(true).lean()
     .then((reviews) => {
+      for (let review of reviews) {
+        if (!review.photos) {
+          review.photos = [];
+        }
+      }
       return {
         product: product_id,
         page,

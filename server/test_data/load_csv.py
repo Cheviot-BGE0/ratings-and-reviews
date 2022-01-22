@@ -1,7 +1,7 @@
 import csv
 import pymongo
 print('Connecting to Database')
-client = pymongo.MongoClient("mongodb://localhost:27017/")
+client = pymongo.MongoClient("mongodb://localhost/atelier_ratings")
 db = client["atelier_ratings"]
 Reviews = db['reviews']
 ReviewsMetas = db['reviewsmetas']
@@ -70,7 +70,7 @@ def to_bool(key):
         return 'true'
 
 def process_review(review):
-    review['review_id'] = review['id']
+    review['review_id'] = int(review['id'])
 
     if not review['product_id'] in product_rating_map:
         product_rating_map[review['product_id']] = {}
