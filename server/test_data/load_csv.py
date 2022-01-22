@@ -1,7 +1,6 @@
 import csv
 import pymongo
 print('Connecting to Database')
-##client = pymongo.MongoClient("mongodb://carl:adele@54.235.35.247/atelier_ratings")
 client = pymongo.MongoClient("mongodb://localhost/atelier_ratings")
 db = client["atelier_ratings"]
 Reviews = db['reviews']
